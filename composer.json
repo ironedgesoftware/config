@@ -23,6 +23,7 @@
         "phpunit/phpunit": "^4.5 || ^5.0.5",
         "phpunit/phpunit-mock-objects": "2.3.0 || ^3.0"
     },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "IronEdge\\Component\\Config\\": "src",
