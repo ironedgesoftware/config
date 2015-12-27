@@ -30,13 +30,13 @@ class ArrayReader implements ReaderInterface
     {
         if (!isset($options['data'])) {
             throw new \InvalidArgumentException(
-                'Parameter "data" is mandatory.'
+                'Option "data" is mandatory.'
             );
         }
 
         if (!is_array($options['data'])) {
             throw new \InvalidArgumentException(
-                'Parameter "data" must be an array.'
+                'Option "data" must be an array.'
             );
         }
 

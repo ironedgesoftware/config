@@ -11,6 +11,7 @@
 
 namespace IronEdge\Component\Config;
 
+use IronEdge\Component\Config\Exception\InvalidOptionTypeException;
 use IronEdge\Component\Config\Reader\ArrayReader;
 use IronEdge\Component\Config\Reader\FileReader;
 use IronEdge\Component\Config\Reader\ReaderInterface;
@@ -23,18 +24,18 @@ use IronEdge\Component\Config\Writer\FileWriter;
  */
 class Config implements ConfigInterface
 {
-    const LOAD_STRATEGY_CLEAR           = 'clear';
-    const LOAD_STRATEGY_REPLACE         = 'replace';
+    const LOAD_STRATEGY_CLEAR_FIRST     = 'clearFirst';
+    const LOAD_STRATEGY_NONE            = 'none';
 
     /**
      * Field $availableLoadStrategies.
      *
      * @var array
      */
-    public static $availableLoadStrategies  = array(
-        self::LOAD_STRATEGY_CLEAR,
-        self::LOAD_STRATEGY_REPLACE
-    );
+    public static $availableLoadStrategies  = [
+        self::LOAD_STRATEGY_CLEAR_FIRST,
+        self::LOAD_STRATEGY_NONE
+    ];
 
     /**
      * The data hold by this instance.
@@ -79,7 +80,7 @@ class Config implements ConfigInterface
                 'writer'                => 'file',
                 'onAfterLoad'           => function(Config $config, array $options) {},
                 'onBeforeSave'          => function(Config $config, array $options) {},
-                'defaultLoadStrategy'   => self::LOAD_STRATEGY_REPLACE,
+                'defaultLoadStrategy'   => self::LOAD_STRATEGY_NONE,
                 'separator'             => '.'
             ],
             $options
@@ -160,37 +161,64 @@ class Config implements ConfigInterface
      *
      * @param array $options - Options.
      *
+     * @throws InvalidOptionTypeException
+     *
      * @return $this
      */
     public function load(array $options = [])
     {
         $options = array_merge(
             [
+                'data'              => null,
                 'file'              => null,
+                'loadInKey'         => null,
                 'strategy'          => $this->getOption('defaultLoadStrategy'),
                 'readerOptions'     => []
             ],
             $options
         );
 
-        // Simple shortcut
-        $options['readerOptions']['file'] = $options['file'];
+        // Simple shortcuts
+        $options['readerOptions']['file'] = isset($options['readerOptions']['file']) ?
+            $options['readerOptions']['file'] :
+            $options['file'];
+        $options['readerOptions']['data'] = isset($options['readerOptions']['data']) ?
+            $options['readerOptions']['data'] :
+            $options['data'];
 
         $data = $this->getReader()->read($options['readerOptions']);
 
-        switch ($options['strategy']) {
-            case self::LOAD_STRATEGY_CLEAR:
-                $this->setData([]);
+        if (is_string($options['strategy'])) {
+            switch ($options['strategy']) {
+                case self::LOAD_STRATEGY_CLEAR_FIRST:
+                    $this->setData([]);
 
-                break;
-            case self::LOAD_STRATEGY_REPLACE:
-                $this->setData(array_replace_recursive($this->getData(), $data));
+                    break;
+                case self::LOAD_STRATEGY_NONE:
 
-                break;
-            default:
-                throw new \InvalidArgumentException(
-                    'Invalid load strategy. Available load strategies: '.implode(', ', self::$availableLoadStrategies)
+                    break;
+                default:
+                    throw new \InvalidArgumentException(
+                        'Invalid load strategy. Available load strategies: '.implode(', ', self::$availableLoadStrategies)
+                    );
+            }
+
+            if ($options['loadInKey'] !== null) {
+                if (!is_string($options['loadInKey'])) {
+                    throw InvalidOptionTypeException::create('loadInKey', 'string');
+                }
+
+                $this->set(
+                    $options['loadInKey'],
+                    array_replace_recursive($this->get($options['loadInKey'], []), $data)
                 );
+            } else {
+                $this->setData(array_replace_recursive($this->getData(), $data));
+            }
+        } else if (is_callable($options['strategy'])) {
+            call_user_func_array($options['strategy'], [$this, $data, $options]);
+        } else {
+            throw InvalidOptionTypeException::create('strategy', 'string, callable');
         }
 
         /** @var Callable $callable */
@@ -200,7 +228,7 @@ class Config implements ConfigInterface
             throw new \RuntimeException('Option "onAfterLoad" must be a callable.');
         }
 
-        $callable($this, $options);
+        call_user_func_array($callable, [$this, $options]);
 
         return $this;
     }
@@ -232,7 +260,7 @@ class Config implements ConfigInterface
             throw new \RuntimeException('Option "onBeforeSave" must be a callable.');
         }
 
-        $callable($this, $options);
+        call_user_func_array($callable, [$this, $options]);
 
         $this->getWriter()->write($this->getData(), $options['writerOptions']);
 

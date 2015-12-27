@@ -19,6 +19,15 @@ use IronEdge\Component\Config\Config;
 
 class ConfigTest extends AbstractTestCase
 {
+    public function test_load_loadInKeyLoadsDataInASpecificKey()
+    {
+        $config = $this->createInstance();
+
+        $config->load(['data' => ['user' => ['username' => 'test']], 'loadInKey' => 'testComponent']);
+
+        $this->assertEquals('test', $config->get('testComponent.user.username'));
+    }
+
     public function test_get_shouldReturnCorrectElement()
     {
         $data = ['user' => array('email' => 'test@test.com', 'profile' => array('age' => 15)), 'group' => 'internal'];
