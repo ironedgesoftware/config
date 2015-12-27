@@ -15,6 +15,10 @@ namespace IronEdge\Component\Config\Reader;
 /*
  * @author Gustavo Falco <comfortablynumb84@gmail.com>
  */
+use IronEdge\Component\Config\Exception\FileDoesNotExistException;
+use IronEdge\Component\Config\Exception\FileIsNotReadableException;
+use IronEdge\Component\Config\Exception\InvalidOptionTypeException;
+use IronEdge\Component\Config\Exception\MissingOptionException;
 use IronEdge\Component\FileUtils\File\Factory;
 
 class FileReader implements ReaderInterface
@@ -44,28 +48,29 @@ class FileReader implements ReaderInterface
      *
      * @param array $options - Options.
      *
-     * @throws \InvalidArgumentException
+     * @throws MissingOptionException
+     * @throws InvalidOptionTypeException
+     * @throws FileDoesNotExistException
+     * @throws FileIsNotReadableException
      *
      * @return array
      */
     public function read(array $options)
     {
         if (!isset($options['file'])) {
-            throw new \InvalidArgumentException(
-                'Parameter "file" is mandatory.'
-            );
+            throw MissingOptionException::create('file');
         }
 
         if (!is_string($options['file'])) {
-            throw new \InvalidArgumentException(
-                'Parameter "file" must be a string.'
-            );
+            throw InvalidOptionTypeException::create('file', 'string');
         }
 
-        if (!is_file($options['file']) || !is_readable($options['file'])) {
-            throw new \InvalidArgumentException(
-                'File "'.$options['file'].'" does not exist, or it\'s not readable.'
-            );
+        if (!is_file($options['file'])) {
+            throw FileDoesNotExistException::create($options['file']);
+        }
+
+        if (!is_readable($options['file'])) {
+            throw FileIsNotReadableException::create($options['file']);
         }
 
         $file = $this->_factory->createInstance($options['file'], null, $options);
