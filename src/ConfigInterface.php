@@ -14,6 +14,8 @@ namespace IronEdge\Component\Config;
 /*
  * @author Gustavo Falco <comfortablynumb84@gmail.com>
  */
+use IronEdge\Component\Config\Exception\ImportException;
+use IronEdge\Component\Config\Exception\InvalidOptionTypeException;
 use IronEdge\Component\Config\Reader\ReaderInterface;
 use IronEdge\Component\Config\Writer\WriterInterface;
 
@@ -52,6 +54,9 @@ interface ConfigInterface
      * Loads the configuration using the reader instance.
      *
      * @param array $options - Options.
+     *
+     * @throws InvalidOptionTypeException
+     * @throws ImportException
      *
      * @return $this
      */
