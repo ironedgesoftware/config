@@ -166,12 +166,17 @@ class Config implements ConfigInterface
     {
         $options = array_merge(
             [
-                'strategy'          => $this->getOption('defaultLoadStrategy')
+                'file'              => null,
+                'strategy'          => $this->getOption('defaultLoadStrategy'),
+                'readerOptions'     => []
             ],
             $options
         );
 
-        $data = $this->getReader()->read($options);
+        // Simple shortcut
+        $options['readerOptions']['file'] = $options['file'];
+
+        $data = $this->getReader()->read($options['readerOptions']);
 
         switch ($options['strategy']) {
             case self::LOAD_STRATEGY_CLEAR:
@@ -209,6 +214,17 @@ class Config implements ConfigInterface
      */
     public function save(array $options = [])
     {
+        $options = array_merge(
+            [
+                'file'              => null,
+                'writerOptions'     => []
+            ],
+            $options
+        );
+
+        // Simple shortcut
+        $options['writerOptions']['file'] = $options['file'];
+
         /** @var Callable $callable */
         $callable = $this->getOption('onBeforeSave');
 
@@ -218,7 +234,7 @@ class Config implements ConfigInterface
 
         $callable($this, $options);
 
-        $this->getWriter()->write($this->getData(), $options);
+        $this->getWriter()->write($this->getData(), $options['writerOptions']);
 
         return $this;
     }
