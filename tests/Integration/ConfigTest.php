@@ -21,7 +21,7 @@ class ConfigTest extends AbstractTestCase
     {
         $config = $this->createInstance();
 
-        $config->load(['file' => $this->getTmpPath().'/config.yml', 'processImports' => true]);
+        $config->load(['file' => $this->getConfigPath().'/config.yml', 'processImports' => true]);
 
         $this->assertEquals('value', $config->get('testParam1.testParam2.testParam3'));
         $this->assertEquals('/my/route.html', $config->get('routes.myRoute'));

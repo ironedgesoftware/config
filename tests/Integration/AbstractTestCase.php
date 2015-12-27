@@ -33,8 +33,8 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         return new Config($data, $options);
     }
 
-    protected function getTmpPath()
+    protected function getConfigPath()
     {
-        return __DIR__.'/../tmp';
+        return __DIR__.'/../config';
     }
 }

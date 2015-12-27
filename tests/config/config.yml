@@ -1,0 +1,9 @@
+import:
+  myServices:
+    file: services.yml
+  myRoutes:
+    file: routes.yml
+
+testParam1:
+  testParam2:
+    testParam3: value
