@@ -90,8 +90,11 @@ class Config implements ConfigInterface
      */
     public function get($index, $default = null, array $options = [])
     {
+        $separator = isset($options['separator']) ?
+            $options['separator'] :
+            $this->getOption('separator');
         $value = $this->getData();
-        $keys = explode($this->getOption('separator'), $index);
+        $keys = explode($separator, $index);
 
         foreach ($keys as $key) {
             if (!is_array($value) || !array_key_exists($key, $value)) {
@@ -104,6 +107,33 @@ class Config implements ConfigInterface
         }
 
         return $value;
+    }
+
+    /**
+     * Returns true if the parameter exists or false otherwise.
+     *
+     * @param string $index   - Index to search for.
+     * @param array  $options - Options.
+     *
+     * @return bool
+     */
+    public function has($index, array $options = [])
+    {
+        $separator = isset($options['separator']) ?
+            $options['separator'] :
+            $this->getOption('separator');
+        $value = $this->getData();
+        $keys = explode($separator, $index);
+
+        foreach ($keys as $key) {
+            if (!is_array($value) || !array_key_exists($key, $value)) {
+                return false;
+            }
+
+            $value = $value[$key];
+        }
+
+        return true;
     }
 
     /**
@@ -122,8 +152,11 @@ class Config implements ConfigInterface
      */
     public function set($index, $value, array $options = [])
     {
+        $separator = isset($options['separator']) ?
+            $options['separator'] :
+            $this->getOption('separator');
         $root = &$this->_data;
-        $keys = explode($this->getOption('separator'), $index);
+        $keys = explode($separator, $index);
         $count = count($keys);
 
         foreach ($keys as $i => $key) {

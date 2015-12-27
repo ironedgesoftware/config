@@ -19,6 +19,25 @@ use IronEdge\Component\Config\Config;
 
 class ConfigTest extends AbstractTestCase
 {
+    public function test_has_shouldReturnCorrectElement()
+    {
+        $data = ['user' => array('email' => 'test@test.com', 'profile' => array('age' => 15)), 'group' => 'internal'];
+        $config = $this->createInstance($data);
+
+        $this->assertTrue($config->has('user.email'));
+        $this->assertFalse($config->has('user.password'));
+    }
+
+    public function test_set_get_has_ifOtherSeparatorIsSpecifiedThenUseIt()
+    {
+        $config = $this->createInstance();
+
+        $config->set('testComponent|user|username', 'test', ['separator' => '|']);
+
+        $this->assertTrue($config->has('testComponent|user|username', ['separator' => '|']));
+        $this->assertEquals('test', $config->get('testComponent|user|username', null, ['separator' => '|']));
+    }
+
     public function test_load_loadInKeyLoadsDataInASpecificKey()
     {
         $config = $this->createInstance();

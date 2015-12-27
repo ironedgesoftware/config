@@ -35,6 +35,16 @@ interface ConfigInterface
     public function get($index, $default = null, array $options = []);
 
     /**
+     * Returns true if the parameter exists or false otherwise.
+     *
+     * @param string $index   - Index to search for.
+     * @param array  $options - Options.
+     *
+     * @return bool
+     */
+    public function has($index, array $options = []);
+
+    /**
      * Sets an element of the configuration. It allows to set elements recursively. For example,
      * if you set the key "user.email" with value "a@a.com", the result is similar to the following:
      *
