@@ -11,6 +11,7 @@
 
 namespace IronEdge\Component\Config;
 
+use IronEdge\Component\Config\Exception\ImportException;
 use IronEdge\Component\Config\Exception\InvalidOptionTypeException;
 use IronEdge\Component\Config\Reader\ArrayReader;
 use IronEdge\Component\Config\Reader\FileReader;
@@ -24,19 +25,6 @@ use IronEdge\Component\Config\Writer\FileWriter;
  */
 class Config implements ConfigInterface
 {
-    const LOAD_STRATEGY_CLEAR_FIRST     = 'clearFirst';
-    const LOAD_STRATEGY_NONE            = 'none';
-
-    /**
-     * Field $availableLoadStrategies.
-     *
-     * @var array
-     */
-    public static $availableLoadStrategies  = [
-        self::LOAD_STRATEGY_CLEAR_FIRST,
-        self::LOAD_STRATEGY_NONE
-    ];
-
     /**
      * The data hold by this instance.
      *
@@ -80,7 +68,6 @@ class Config implements ConfigInterface
                 'writer'                => 'file',
                 'onAfterLoad'           => function(Config $config, array $options) {},
                 'onBeforeSave'          => function(Config $config, array $options) {},
-                'defaultLoadStrategy'   => self::LOAD_STRATEGY_NONE,
                 'separator'             => '.'
             ],
             $options
@@ -162,17 +149,19 @@ class Config implements ConfigInterface
      * @param array $options - Options.
      *
      * @throws InvalidOptionTypeException
+     * @throws ImportException
      *
      * @return $this
      */
     public function load(array $options = [])
     {
-        $options = array_merge(
+        $options = array_replace_recursive(
             [
                 'data'              => null,
                 'file'              => null,
                 'loadInKey'         => null,
-                'strategy'          => $this->getOption('defaultLoadStrategy'),
+                'processImports'    => false,
+                'clearFirst'        => false,
                 'readerOptions'     => []
             ],
             $options
@@ -186,39 +175,51 @@ class Config implements ConfigInterface
             $options['readerOptions']['data'] :
             $options['data'];
 
-        $data = $this->getReader()->read($options['readerOptions']);
+        $reader = $this->getReader();
+        $data = $reader->read($options['readerOptions']);
 
-        if (is_string($options['strategy'])) {
-            switch ($options['strategy']) {
-                case self::LOAD_STRATEGY_CLEAR_FIRST:
-                    $this->setData([]);
-
-                    break;
-                case self::LOAD_STRATEGY_NONE:
-
-                    break;
-                default:
-                    throw new \InvalidArgumentException(
-                        'Invalid load strategy. Available load strategies: '.implode(', ', self::$availableLoadStrategies)
-                    );
+        if ($options['processImports'] && isset($data['import'])) {
+            if (!is_array($data['import'])) {
+                throw ImportException::create('"import" parameter must be an array.');
             }
 
-            if ($options['loadInKey'] !== null) {
-                if (!is_string($options['loadInKey'])) {
-                    throw InvalidOptionTypeException::create('loadInKey', 'string');
+            foreach ($data['import'] as $importData) {
+                if (!is_array($importData)) {
+                    throw ImportException::create('Each "import" array element must be an array.');
                 }
 
-                $this->set(
-                    $options['loadInKey'],
-                    array_replace_recursive($this->get($options['loadInKey'], []), $data)
-                );
-            } else {
-                $this->setData(array_replace_recursive($this->getData(), $data));
+                if (isset($importData['file'])) {
+                    if ($options['file']) {
+                        $importData['file'] = $importData['file']{0} === '/' ?
+                            $importData['file'] :
+                            dirname($options['file']).'/'.$importData['file'];
+                    }
+
+                    if (!is_file($importData['file'])) {
+                        continue;
+                    }
+                }
+
+                $readOptions = array_replace_recursive($options['readerOptions'], $importData);
+                $data = array_replace_recursive($data, $reader->read($readOptions));
             }
-        } else if (is_callable($options['strategy'])) {
-            call_user_func_array($options['strategy'], [$this, $data, $options]);
+        }
+
+        if ($options['clearFirst']) {
+            $this->setData([]);
+        }
+
+        if ($options['loadInKey'] !== null) {
+            if (!is_string($options['loadInKey'])) {
+                throw InvalidOptionTypeException::create('loadInKey', 'string');
+            }
+
+            $this->set(
+                $options['loadInKey'],
+                array_replace_recursive($this->get($options['loadInKey'], []), $data)
+            );
         } else {
-            throw InvalidOptionTypeException::create('strategy', 'string, callable');
+            $this->setData(array_replace_recursive($this->getData(), $data));
         }
 
         /** @var Callable $callable */
