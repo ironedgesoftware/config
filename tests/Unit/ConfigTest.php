@@ -19,6 +19,19 @@ use IronEdge\Component\Config\Config;
 
 class ConfigTest extends AbstractTestCase
 {
+    public function test_templateVariables_shouldBeReplacedAtAnyLevel()
+    {
+        $data = ['user' => array('email' => '%my_email%', 'profile' => array('age' => '%my_age%')), 'group' => '%my_group%'];
+        $templateVariables = [
+            '%my_email%'            => 'a@a.com',
+            '%my_age%'              => 21,
+            '%my_group%'            => 'admin_group'
+        ];
+        $config = $this->createInstance($data, ['templateVariables' => $templateVariables]);
+
+        $this->assertEquals($templateVariables['%my_email%'], $config->get('user.email'));
+    }
+
     public function test_has_shouldReturnCorrectElement()
     {
         $data = ['user' => array('email' => 'test@test.com', 'profile' => array('age' => 15)), 'group' => 'internal'];

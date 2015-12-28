@@ -62,19 +62,20 @@ class Config implements ConfigInterface
      */
     public function __construct(array $data = [], array $options = [])
     {
-        $options = array_merge(
+        $options = array_replace_recursive(
             [
                 'reader'                => 'file',
                 'writer'                => 'file',
                 'onAfterLoad'           => function(Config $config, array $options) {},
                 'onBeforeSave'          => function(Config $config, array $options) {},
-                'separator'             => '.'
+                'separator'             => '.',
+                'templateVariables'     => []
             ],
             $options
         );
 
-        $this->setData($data)
-            ->setOptions($options);
+        $this->setOptions($options)
+            ->setData($data);
     }
 
     /**
@@ -320,6 +321,18 @@ class Config implements ConfigInterface
      */
     public function setData($data)
     {
+        if ($templateVariables = $this->getOption('templateVariables', [])) {
+            $templateVariableKeys = array_keys($templateVariables);
+
+            array_walk_recursive(
+                $data,
+                function(&$value, $key, $data) {
+                    $value = str_replace($data['keys'], $data['values'], $value);
+                },
+                ['keys' => $templateVariableKeys, 'values' => $templateVariables]
+            );
+        }
+
         $this->_data = $data;
 
         return $this;
