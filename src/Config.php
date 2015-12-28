@@ -250,7 +250,7 @@ class Config implements ConfigInterface
 
             $this->set(
                 $options['loadInKey'],
-                array_replace_recursive($this->get($options['loadInKey'], []), $data)
+                $this->replaceTemplateVariables(array_replace_recursive($this->get($options['loadInKey'], []), $data))
             );
         } else {
             $this->setData(array_replace_recursive($this->getData(), $data));
@@ -322,21 +322,44 @@ class Config implements ConfigInterface
      */
     public function setData($data, $replaceTemplateVariables = true)
     {
-        if ($replaceTemplateVariables && $templateVariables = $this->getOption('templateVariables', [])) {
-            $templateVariableKeys = array_keys($templateVariables);
-
-            array_walk_recursive(
-                $data,
-                function(&$value, $key, $data) {
-                    $value = str_replace($data['keys'], $data['values'], $value);
-                },
-                ['keys' => $templateVariableKeys, 'values' => $templateVariables]
-            );
+        if ($replaceTemplateVariables) {
+            $data = $this->replaceTemplateVariables($data);
         }
 
         $this->_data = $data;
 
         return $this;
+    }
+
+    /**
+     * Replaces the data with the template variables configured on this instance.
+     *
+     * @param string|array $data - Data.
+     *
+     * @return string|array
+     */
+    public function replaceTemplateVariables($data)
+    {
+        if ($templateVariables = $this->getOption('templateVariables', [])) {
+            $templateVariableKeys = array_keys($templateVariables);
+
+            if (is_string($data)) {
+                $data = str_replace($templateVariableKeys, $templateVariables, $data);
+            } else if (is_array($data)) {
+                array_walk_recursive(
+                    $data,
+                    function(&$value, &$key, &$data) {
+                        $value = str_replace($data['keys'], $data['values'], $value);
+                    },
+                    [
+                        'keys'      => $templateVariableKeys,
+                        'values'    => $templateVariables
+                    ]
+                );
+            }
+        }
+
+        return $data;
     }
 
     /**

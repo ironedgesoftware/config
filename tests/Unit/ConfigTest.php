@@ -19,6 +19,21 @@ use IronEdge\Component\Config\Config;
 
 class ConfigTest extends AbstractTestCase
 {
+    public function test_replaceTemplateVariables_replacesAStringAndAnArrayAsWell()
+    {
+        $templateVariables = [
+            '%my_email%'            => 'a@a.com',
+            '%my_age%'              => 21,
+            '%my_group%'            => 'admin_group',
+            '%isAdmin%'             => 'YES',
+            '%car%'                 => 'Porsche 911'
+        ];
+        $config = $this->createInstance([], ['templateVariables' => $templateVariables]);
+
+        $this->assertEquals(['email' => $templateVariables['%my_email%']], $config->replaceTemplateVariables(['email' => '%my_email%']));
+        $this->assertEquals($templateVariables['%my_email%'].' is my email', $config->replaceTemplateVariables('%my_email% is my email'));
+    }
+
     public function test_templateVariables_shouldBeReplacedAtAnyLevel()
     {
         $data = ['user' => array('email' => '%my_email%', 'profile' => array('age' => '%my_age%')), 'group' => '%my_group%'];
@@ -26,7 +41,8 @@ class ConfigTest extends AbstractTestCase
             '%my_email%'            => 'a@a.com',
             '%my_age%'              => 21,
             '%my_group%'            => 'admin_group',
-            '%isAdmin%'             => 'YES'
+            '%isAdmin%'             => 'YES',
+            '%car%'                 => 'Porsche 911'
         ];
         $config = $this->createInstance($data, ['templateVariables' => $templateVariables]);
 
@@ -46,6 +62,10 @@ class ConfigTest extends AbstractTestCase
         $this->assertEquals('%my_age%', $config->get('user.profile.age'));
         $this->assertEquals('%my_group%', $config->get('group'));
         $this->assertEquals('%isAdmin%', $config->get('isAdmin'));
+
+        $config->load(['data' => ['car' => '%car%']]);
+
+        $this->assertEquals($templateVariables['%car%'], $config->get('car'));
     }
 
     public function test_has_shouldReturnCorrectElement()
