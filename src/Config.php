@@ -315,13 +315,14 @@ class Config implements ConfigInterface
     /**
      * Setter method for field data.
      *
-     * @param array $data - data.
+     * @param array $data                     - data.
+     * @param bool  $replaceTemplateVariables - Replace template variables?
      *
      * @return $this
      */
-    public function setData($data)
+    public function setData($data, $replaceTemplateVariables = true)
     {
-        if ($templateVariables = $this->getOption('templateVariables', [])) {
+        if ($replaceTemplateVariables && $templateVariables = $this->getOption('templateVariables', [])) {
             $templateVariableKeys = array_keys($templateVariables);
 
             array_walk_recursive(

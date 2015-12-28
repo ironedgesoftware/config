@@ -25,11 +25,27 @@ class ConfigTest extends AbstractTestCase
         $templateVariables = [
             '%my_email%'            => 'a@a.com',
             '%my_age%'              => 21,
-            '%my_group%'            => 'admin_group'
+            '%my_group%'            => 'admin_group',
+            '%isAdmin%'             => 'YES'
         ];
         $config = $this->createInstance($data, ['templateVariables' => $templateVariables]);
 
         $this->assertEquals($templateVariables['%my_email%'], $config->get('user.email'));
+        $this->assertEquals($templateVariables['%my_age%'], $config->get('user.profile.age'));
+        $this->assertEquals($templateVariables['%my_group%'], $config->get('group'));
+
+        $data['isAdmin'] = '%isAdmin%';
+
+        $config->setData($data);
+
+        $this->assertEquals($templateVariables['%isAdmin%'], $config->get('isAdmin'));
+
+        $config->setData($data, false);
+
+        $this->assertEquals('%my_email%', $config->get('user.email'));
+        $this->assertEquals('%my_age%', $config->get('user.profile.age'));
+        $this->assertEquals('%my_group%', $config->get('group'));
+        $this->assertEquals('%isAdmin%', $config->get('isAdmin'));
     }
 
     public function test_has_shouldReturnCorrectElement()
