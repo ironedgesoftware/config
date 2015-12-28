@@ -240,7 +240,7 @@ class Config implements ConfigInterface
         }
 
         if ($options['clearFirst']) {
-            $this->setData([]);
+            $this->setData([], false);
         }
 
         if ($options['loadInKey'] !== null) {
