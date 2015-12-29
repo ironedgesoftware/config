@@ -20,6 +20,15 @@ use IronEdge\Component\Config\Config;
 class ConfigTest extends AbstractTestCase
 {
     /**
+     * @expectedException \RuntimeException
+     */
+    public function test_callFunction_ifFunctionExistsThrowsException()
+    {
+        $config = $this->createInstance([]);
+        $config->callFunction('function_does_not_exist!', 'a', ['b']);
+    }
+
+    /**
      * @dataProvider callFunctionDataProvider
      */
     public function test_callFunction($function, $objectFunction)
