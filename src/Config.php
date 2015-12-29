@@ -178,6 +178,93 @@ class Config implements ConfigInterface
     }
 
     /**
+     * Calls array_replace_recursive using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function replaceRecursive($index, array $value, $default = null, array $options = [])
+    {
+        return $this->callFunction('array_replace_recursive', $index, $value, $default, $options);
+    }
+
+    /**
+     * Calls array_merge_recursive using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function mergeRecursive($index, array $value, $default = null, array $options = [])
+    {
+        return $this->callFunction('array_merge_recursive', $index, $value, $default, $options);
+    }
+
+    /**
+     * Calls array_replace using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function replace($index, array $value, $default = null, array $options = [])
+    {
+        return $this->callFunction('array_replace', $index, $value, $default, $options);
+    }
+
+    /**
+     * Calls array_merge using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function merge($index, array $value, $default = null, array $options = [])
+    {
+        return $this->callFunction('array_merge', $index, $value, $default, $options);
+    }
+
+    /**
+     * Obtains data on $index, calls $function using as first parameter the data obtained, and as second
+     * parameter $value.
+     *
+     * @param string $function - Function to call.
+     * @param string $index    - Index.
+     * @param array  $value    - Value.
+     * @param mixed  $default  - Default value.
+     * @param array  $options  - Options.
+     *
+     * @return $this
+     */
+    public function callFunction($function, $index, array $value, $default = null, array $options = [])
+    {
+        if (!function_exists($function)) {
+            throw new \RuntimeException('Function "'.$function.'" does not exist!');
+        }
+
+        $data = $this->get($index, $default, $options);
+
+        $value = $function($data, $value);
+
+        $this->set($index, $value, $options);
+
+        return $this;
+    }
+
+    /**
      * Loads the configuration using the reader instance.
      *
      * @param array $options - Options.

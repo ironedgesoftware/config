@@ -19,6 +19,19 @@ use IronEdge\Component\Config\Config;
 
 class ConfigTest extends AbstractTestCase
 {
+    /**
+     * @dataProvider callFunctionDataProvider
+     */
+    public function test_callFunction($function, $objectFunction)
+    {
+        $originalData = ['username' => 'admin', 'groups' => ['admin' => 'enabled', 'guest' => 'disabled']];
+        $config = $this->createInstance(['user' => $originalData]);
+        $expectedData = ['email' => 'a@a.com', 'groups' => ['admin' => 'disabled', 'guest' => 'enabled', 'other' => 'disabled']];
+        $config->$objectFunction('user', $expectedData);
+
+        $this->assertEquals($function($originalData, $expectedData), $config->get('user'));
+    }
+
     public function test_replaceTemplateVariables_replacesAStringAndAnArrayAsWell()
     {
         $templateVariables = [
@@ -117,6 +130,28 @@ class ConfigTest extends AbstractTestCase
 
         $this->assertEquals('myValue', $config->get('test'));
         $this->assertEquals('myOtherValue', $config->get('test2.test3.test4'));
+    }
+
+
+
+    // Data Providers
+
+    public function callFunctionDataProvider()
+    {
+        return [
+            [
+                'array_merge', 'merge'
+            ],
+            [
+                'array_replace', 'replace'
+            ],
+            [
+                'array_replace_recursive', 'replaceRecursive'
+            ],
+            [
+                'array_merge_recursive', 'mergeRecursive'
+            ]
+        ];
     }
 
     // Helper Methods
