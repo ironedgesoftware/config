@@ -22,6 +22,68 @@ use IronEdge\Component\Config\Writer\WriterInterface;
 interface ConfigInterface
 {
     /**
+     * Calls array_replace_recursive using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function replaceRecursive($index, array $value, $default = null, array $options = []);
+
+    /**
+     * Calls array_merge_recursive using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function mergeRecursive($index, array $value, $default = null, array $options = []);
+
+    /**
+     * Calls array_replace using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function replace($index, array $value, $default = null, array $options = []);
+
+    /**
+     * Calls array_merge using the data existent on $index and data on $value.
+     *
+     * @param string $index   - Index.
+     * @param array  $value   - Value.
+     * @param mixed  $default - Default value.
+     * @param array  $options - Options.
+     *
+     * @return $this
+     */
+    public function merge($index, array $value, $default = null, array $options = []);
+
+    /**
+     * Obtains data on $index, calls $function using as first parameter the data obtained, and as second
+     * parameter $value.
+     *
+     * @param string $function - Function to call.
+     * @param string $index    - Index.
+     * @param array  $value    - Value.
+     * @param mixed  $default  - Default value.
+     * @param array  $options  - Options.
+     *
+     * @return $this
+     */
+    public function callFunction($function, $index, array $value, $default = null, array $options = []);
+
+    /**
      * Returns an element of the configuration array. You can search for values recursively using
      * a dot (or the separator set on the "separator" option). For example: user.email would look
      * for the value in the array like this: $data['user']['email'].
