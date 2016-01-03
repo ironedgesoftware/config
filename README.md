@@ -1,5 +1,7 @@
 # Config
 
+[![Build Status](https://travis-ci.org/ironedgesoftware/config.svg?branch=master)](https://travis-ci.org/ironedgesoftware/config)
+
 This component provides a simple API to handle configuration parameters. It
 can handle different **readers** and **writers** to read from and write to any
 storage.
