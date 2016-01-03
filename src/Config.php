@@ -85,12 +85,8 @@ class Config implements ConfigInterface, DataInterface, OptionsInterface
         );
 
         // Simple shortcuts
-        $options['readerOptions']['file'] = isset($options['readerOptions']['file']) ?
-            $options['readerOptions']['file'] :
-            $options['file'];
-        $options['readerOptions']['data'] = isset($options['readerOptions']['data']) ?
-            $options['readerOptions']['data'] :
-            $options['data'];
+        $options['readerOptions']['file'] = $options['readerOptions']['file'] ?? $options['file'];
+        $options['readerOptions']['data'] = $options['readerOptions']['data'] ?? $options['data'];
 
         $reader = $this->getReader();
         $data = $reader->read($options['readerOptions']);
