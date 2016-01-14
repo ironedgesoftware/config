@@ -73,6 +73,7 @@ class Config implements ConfigInterface, DataInterface, OptionsInterface
     public function load(array $options = [])
     {
         $options = array_replace_recursive(
+            $this->getOptions(),
             [
                 'data'              => null,
                 'file'              => null,
