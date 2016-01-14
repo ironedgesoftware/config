@@ -73,15 +73,7 @@ class Config implements ConfigInterface, DataInterface, OptionsInterface
     public function load(array $options = [])
     {
         $options = array_replace_recursive(
-            $this->getOptions(),
-            [
-                'data'              => null,
-                'file'              => null,
-                'loadInKey'         => null,
-                'processImports'    => false,
-                'clearFirst'        => false,
-                'readerOptions'     => []
-            ],
+            $this->getOption('loadOptions', []),
             $options
         );
 
@@ -336,7 +328,15 @@ class Config implements ConfigInterface, DataInterface, OptionsInterface
             'onAfterLoad'           => function(Config $config, array $options) {},
             'onBeforeSave'          => function(Config $config, array $options) {},
             'separator'             => '.',
-            'templateVariables'     => []
+            'templateVariables'     => [],
+            'loadOptions'           => [
+                'data'              => null,
+                'file'              => null,
+                'loadInKey'         => null,
+                'processImports'    => false,
+                'clearFirst'        => false,
+                'readerOptions'     => []
+            ]
         ];
     }
 
