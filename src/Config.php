@@ -26,7 +26,7 @@ use IronEdge\Component\Config\Writer\FileWriter;
 /*
  * @author Gustavo Falco <comfortablynumb84@gmail.com>
  */
-class Config implements ConfigInterface, DataInterface, OptionsInterface
+class Config implements ConfigInterface, OptionsInterface
 {
     use DataTrait {
         setOptions as traitSetOptions;
